@@ -5,18 +5,18 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
-                <h2 class="card-title mb-4">YouTube Video Summarizer</h2>
+                <h2 class="card-title mb-4">YouTube 動画要約ツール</h2>
                 
                 <form id="urlForm" class="mb-4">
                     <div id="urlInputs">
                         <div class="mb-3">
-                            <input type="url" class="form-control" placeholder="Enter YouTube URL" required>
+                            <input type="url" class="form-control" placeholder="YouTube URLを入力してください" required>
                         </div>
                     </div>
                     
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-secondary" id="addUrlBtn">Add Another URL</button>
-                        <button type="submit" class="btn btn-primary">Generate Summaries</button>
+                        <button type="button" class="btn btn-secondary" id="addUrlBtn">URLを追加</button>
+                        <button type="submit" class="btn btn-primary">要約を生成</button>
                     </div>
                 </form>
             </div>
@@ -26,7 +26,19 @@
         
         <div id="loadingSpinner" class="text-center d-none">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">読み込み中...</span>
+            </div>
+        </div>
+
+        <div id="combinedSummary" class="mt-4 d-none">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">統合要約</h3>
+                    <div class="markdown-content" id="combinedContent"></div>
+                    <button class="btn btn-download mt-3" onclick="downloadCombinedSummary()">
+                        統合要約をダウンロード
+                    </button>
+                </div>
             </div>
         </div>
     </div>

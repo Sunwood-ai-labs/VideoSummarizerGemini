@@ -4,13 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const addUrlBtn = document.getElementById('addUrlBtn');
     const results = document.getElementById('results');
     const loadingSpinner = document.getElementById('loadingSpinner');
+    const combinedSummary = document.getElementById('combinedSummary');
 
     // Add URL input field
     addUrlBtn.addEventListener('click', () => {
         const inputDiv = document.createElement('div');
         inputDiv.className = 'mb-3 d-flex gap-2';
         inputDiv.innerHTML = `
-            <input type="url" class="form-control" placeholder="Enter YouTube URL" required>
+            <input type="url" class="form-control" placeholder="YouTube URLを入力してください" required>
             <button type="button" class="btn btn-danger remove-url">×</button>
         `;
         urlInputs.appendChild(inputDiv);
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading spinner
         loadingSpinner.classList.remove('d-none');
         results.innerHTML = '';
+        combinedSummary.classList.add('d-none');
 
         try {
             const response = await fetch('/api/summarize', {
@@ -44,15 +46,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             // Display results
+            let allSummaries = [];
             data.forEach(result => {
                 if (result.error) {
                     displayError(result.error);
                 } else {
                     displayArticle(result);
+                    allSummaries.push({ title: result.title, summary: result.summary });
                 }
             });
+
+            // Generate combined summary if multiple articles
+            if (allSummaries.length > 1) {
+                displayCombinedSummary(allSummaries);
+            }
         } catch (error) {
-            displayError('An error occurred while processing your request.');
+            displayError('要約の生成中にエラーが発生しました。');
         } finally {
             loadingSpinner.classList.add('d-none');
         }
@@ -76,13 +85,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="col-md-8">
                         <h3 class="card-title">${article.title}</h3>
-                        <p class="card-text">${article.summary}</p>
-                        <div class="d-flex gap-2">
+                        <div class="markdown-content">${marked.parse(article.summary)}</div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-download" onclick="downloadSummary('${article.title}', '${encodeURIComponent(article.summary)}')">
+                                要約をダウンロード
+                            </button>
                             <button class="btn btn-outline-primary btn-sm share-btn" data-id="${article.id}">
-                                Share
+                                共有
                             </button>
                             <button class="btn btn-outline-secondary btn-sm copy-btn" data-id="${article.id}">
-                                Copy Text
+                                テキストをコピー
                             </button>
                         </div>
                     </div>
@@ -94,17 +106,52 @@ document.addEventListener('DOMContentLoaded', function() {
         articleDiv.querySelector('.share-btn').addEventListener('click', () => {
             const url = `${window.location.origin}/article/${article.id}`;
             navigator.clipboard.writeText(url)
-                .then(() => alert('Link copied to clipboard!'))
-                .catch(() => alert('Failed to copy link'));
+                .then(() => alert('リンクをクリップボードにコピーしました！'))
+                .catch(() => alert('リンクのコピーに失敗しました'));
         });
 
         // Add copy text button handler
         articleDiv.querySelector('.copy-btn').addEventListener('click', () => {
             navigator.clipboard.writeText(article.summary)
-                .then(() => alert('Summary copied to clipboard!'))
-                .catch(() => alert('Failed to copy summary'));
+                .then(() => alert('要約をクリップボードにコピーしました！'))
+                .catch(() => alert('要約のコピーに失敗しました'));
         });
 
         results.appendChild(articleDiv);
     }
+
+    function displayCombinedSummary(summaries) {
+        const combinedContent = summaries.map(s => 
+            `# ${s.title}\n\n${s.summary}\n\n---\n`
+        ).join('\n');
+
+        document.getElementById('combinedContent').innerHTML = marked.parse(combinedContent);
+        combinedSummary.classList.remove('d-none');
+    }
 });
+
+function downloadSummary(title, summary) {
+    const content = `# ${title}\n\n${decodeURIComponent(summary)}`;
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_summary.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function downloadCombinedSummary() {
+    const content = document.getElementById('combinedContent').innerText;
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'combined_summary.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}

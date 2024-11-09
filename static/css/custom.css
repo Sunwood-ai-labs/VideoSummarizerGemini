@@ -1,8 +1,24 @@
-/* Custom styles */
+/* Font settings */
+:root {
+    --font-jp: 'Kaisei Decol', serif;
+    --font-en: 'Oswald', sans-serif;
+}
+
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    font-family: var(--font-jp);
+    background: linear-gradient(135deg, #2a1f1d 0%, #1a1a1a 100%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-jp);
+    font-weight: 700;
+}
+
+.navbar-brand, .btn {
+    font-family: var(--font-en);
 }
 
 main {
@@ -11,12 +27,14 @@ main {
 
 .card {
     border: none;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    background: linear-gradient(145deg, #2d2624 0%, #232323 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
 .article-card {
@@ -54,4 +72,35 @@ main {
 .fade-exit-active {
     opacity: 0;
     transition: opacity 200ms ease-in;
+}
+
+/* Markdown content styling */
+.markdown-content {
+    font-family: var(--font-jp);
+    line-height: 1.8;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.markdown-content p {
+    margin-bottom: 1rem;
+}
+
+/* Download button styling */
+.btn-download {
+    background: linear-gradient(45deg, #ff6b6b 0%, #ffa07a 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-download:hover {
+    background: linear-gradient(45deg, #ff5252 0%, #ff8c66 100%);
+    color: white;
 }
