@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">YouTube Video Summarizer</h2>
+                
+                <form id="urlForm" class="mb-4">
+                    <div id="urlInputs">
+                        <div class="mb-3">
+                            <input type="url" class="form-control" placeholder="Enter YouTube URL" required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" id="addUrlBtn">Add Another URL</button>
+                        <button type="submit" class="btn btn-primary">Generate Summaries</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="results" class="mt-4"></div>
+        
+        <div id="loadingSpinner" class="text-center d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

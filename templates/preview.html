@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Back button -->
+        <div class="mb-4">
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <!-- Article Preview -->
+        <article class="card preview-card">
+            <div class="card-body">
+                <!-- Video Thumbnail -->
+                <div class="text-center mb-4">
+                    <img src="{{ article.thumbnail_url }}" 
+                         alt="{{ article.title }}" 
+                         class="img-fluid rounded preview-thumbnail">
+                </div>
+
+                <!-- Article Title -->
+                <h1 class="card-title h2 mb-4">{{ article.title }}</h1>
+
+                <!-- Metadata -->
+                <div class="d-flex justify-content-between text-muted mb-4">
+                    <span>
+                        <i class="bi bi-calendar"></i>
+                        {{ article.created_at.strftime('%B %d, %Y') }}
+                    </span>
+                    <a href="https://youtube.com/watch?v={{ article.video_id }}" 
+                       target="_blank" 
+                       class="text-decoration-none">
+                        <i class="bi bi-youtube"></i>
+                        Original Video
+                    </a>
+                </div>
+
+                <!-- Article Content -->
+                <div class="article-content">
+                    {{ article.summary | safe }}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-4">
+                    <button class="btn btn-outline-primary share-btn" 
+                            data-id="{{ article.id }}">
+                        <i class="bi bi-share"></i> Share
+                    </button>
+                    <button class="btn btn-outline-secondary copy-btn" 
+                            data-id="{{ article.id }}">
+                        <i class="bi bi-clipboard"></i> Copy Text
+                    </button>
+                </div>
+            </div>
+        </article>
+
+        <!-- Social Share Modal -->
+        <div class="modal fade" id="shareModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Share Article</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group mb-3">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="shareUrl" 
+                                   value="{{ request.url }}" 
+                                   readonly>
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    onclick="copyShareUrl()">
+                                Copy
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="https://twitter.com/intent/tweet?url={{ request.url | urlencode }}&text={{ article.title | urlencode }}"
+                               class="btn btn-outline-primary"
+                               target="_blank">
+                                Twitter
+                            </a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url | urlencode }}"
+                               class="btn btn-outline-primary"
+                               target="_blank">
+                                Facebook
+                            </a>
+                            <a href="https://www.linkedin.com/shareArticle?url={{ request.url | urlencode }}&title={{ article.title | urlencode }}"
+                               class="btn btn-outline-primary"
+                               target="_blank">
+                                LinkedIn
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Share button handler
+    document.querySelector('.share-btn').addEventListener('click', function() {
+        const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+        shareModal.show();
+    });
+
+    // Copy text button handler
+    document.querySelector('.copy-btn').addEventListener('click', function() {
+        const summary = document.querySelector('.article-content').textContent;
+        navigator.clipboard.writeText(summary)
+            .then(() => {
+                showToast('Summary copied to clipboard!');
+            })
+            .catch(() => {
+                showToast('Failed to copy summary', 'error');
+            });
+    });
+});
+
+function copyShareUrl() {
+    const shareUrl = document.getElementById('shareUrl');
+    shareUrl.select();
+    navigator.clipboard.writeText(shareUrl.value)
+        .then(() => {
+            showToast('Link copied to clipboard!');
+        })
+        .catch(() => {
+            showToast('Failed to copy link', 'error');
+        });
+}
+
+function showToast(message, type = 'success') {
+    const toastDiv = document.createElement('div');
+    toastDiv.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toastDiv.setAttribute('role', 'alert');
+    toastDiv.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toastDiv);
+    const toast = new bootstrap.Toast(toastDiv);
+    toast.show();
+    
+    toastDiv.addEventListener('hidden.bs.toast', () => {
+        toastDiv.remove();
+    });
+}
+</script>
+
+<style>
+.preview-card {
+    border: none;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.preview-thumbnail {
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--bs-body-color);
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+</style>
+{% endblock %}
