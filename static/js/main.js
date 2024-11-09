@@ -9,10 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add URL input field
     addUrlBtn.addEventListener('click', () => {
         const inputDiv = document.createElement('div');
-        inputDiv.className = 'mb-3 d-flex gap-2';
+        inputDiv.className = 'mb-3';
         inputDiv.innerHTML = `
-            <input type="url" class="form-control" placeholder="YouTube URLを入力してください" required>
-            <button type="button" class="btn btn-danger remove-url">×</button>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fab fa-youtube"></i></span>
+                <input type="url" class="form-control" placeholder="YouTube URLを入力してください" required>
+                <button type="button" class="btn btn-danger remove-url">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         `;
         urlInputs.appendChild(inputDiv);
 
@@ -70,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayError(message) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'alert alert-danger';
-        errorDiv.textContent = message;
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
         results.appendChild(errorDiv);
     }
 
@@ -81,14 +86,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generate quality score badge HTML
         const qualityScoreBadge = article.quality_score ? `
             <div class="quality-score-badge ${getQualityScoreClass(article.quality_score)}">
-                品質スコア: ${article.quality_score}
+                <i class="fas fa-star"></i> 品質スコア: ${article.quality_score}
             </div>
         ` : '';
         
         articleDiv.innerHTML = `
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-4 position-relative">
                         <img src="${article.thumbnail_url}" alt="${article.title}" class="img-fluid">
                         ${qualityScoreBadge}
                     </div>
@@ -97,13 +102,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="markdown-content">${marked.parse(article.summary)}</div>
                         <div class="d-flex gap-2 mt-3">
                             <button class="btn btn-download" onclick="downloadSummary('${article.title}', '${encodeURIComponent(article.summary)}')">
-                                要約をダウンロード
+                                <i class="fas fa-download"></i> 要約をダウンロード
                             </button>
                             <button class="btn btn-outline-primary btn-sm share-btn" data-id="${article.id}">
-                                共有
+                                <i class="fas fa-share-alt"></i> 共有
                             </button>
                             <button class="btn btn-outline-secondary btn-sm copy-btn" data-id="${article.id}">
-                                テキストをコピー
+                                <i class="fas fa-copy"></i> テキストをコピー
                             </button>
                         </div>
                     </div>
@@ -115,15 +120,15 @@ document.addEventListener('DOMContentLoaded', function() {
         articleDiv.querySelector('.share-btn').addEventListener('click', () => {
             const url = `${window.location.origin}/article/${article.id}`;
             navigator.clipboard.writeText(url)
-                .then(() => alert('リンクをクリップボードにコピーしました！'))
-                .catch(() => alert('リンクのコピーに失敗しました'));
+                .then(() => showToast('リンクをクリップボードにコピーしました！'))
+                .catch(() => showToast('リンクのコピーに失敗しました', 'error'));
         });
 
         // Add copy text button handler
         articleDiv.querySelector('.copy-btn').addEventListener('click', () => {
             navigator.clipboard.writeText(article.summary)
-                .then(() => alert('要約をクリップボードにコピーしました！'))
-                .catch(() => alert('要約のコピーに失敗しました'));
+                .then(() => showToast('要約をクリップボードにコピーしました！'))
+                .catch(() => showToast('要約のコピーに失敗しました', 'error'));
         });
 
         results.appendChild(articleDiv);
@@ -170,4 +175,25 @@ function downloadCombinedSummary() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+function showToast(message, type = 'success') {
+    const toastDiv = document.createElement('div');
+    toastDiv.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toastDiv.setAttribute('role', 'alert');
+    toastDiv.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toastDiv);
+    const toast = new bootstrap.Toast(toastDiv);
+    toast.show();
+    
+    toastDiv.addEventListener('hidden.bs.toast', () => {
+        toastDiv.remove();
+    });
 }
