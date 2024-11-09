@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const results = document.getElementById('results');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const combinedSummary = document.getElementById('combinedSummary');
+    const combiningSpinner = document.getElementById('combiningSpinner');
 
     // Add URL input field
     addUrlBtn.addEventListener('click', () => {
@@ -51,19 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             // Display results
-            let allSummaries = [];
+            let validSummaries = [];
             data.forEach(result => {
                 if (result.error) {
                     displayError(result.error);
                 } else {
                     displayArticle(result);
-                    allSummaries.push({ title: result.title, summary: result.summary });
+                    validSummaries.push({
+                        title: result.title,
+                        summary: result.summary
+                    });
                 }
             });
 
             // Generate combined summary if multiple articles
-            if (allSummaries.length > 1) {
-                displayCombinedSummary(allSummaries);
+            if (validSummaries.length > 1) {
+                await generateCombinedSummary(validSummaries);
             }
         } catch (error) {
             displayError('要約の生成中にエラーが発生しました。');
@@ -81,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayArticle(article) {
         const articleDiv = document.createElement('div');
-        articleDiv.className = 'card article-card';
+        articleDiv.className = 'col-md-6';
         
         // Generate quality score badge HTML
         const qualityScoreBadge = article.quality_score ? `
@@ -91,26 +95,24 @@ document.addEventListener('DOMContentLoaded', function() {
         ` : '';
         
         articleDiv.innerHTML = `
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 position-relative">
-                        <img src="${article.thumbnail_url}" alt="${article.title}" class="img-fluid">
+            <div class="card article-card">
+                <div class="card-body">
+                    <div class="position-relative">
+                        <img src="${article.thumbnail_url}" alt="${article.title}" class="img-fluid mb-3">
                         ${qualityScoreBadge}
                     </div>
-                    <div class="col-md-8">
-                        <h3 class="card-title">${article.title}</h3>
-                        <div class="markdown-content">${marked.parse(article.summary)}</div>
-                        <div class="d-flex gap-2 mt-3">
-                            <button class="btn btn-download" onclick="downloadSummary('${article.title}', '${encodeURIComponent(article.summary)}')">
-                                <i class="fas fa-download"></i> 要約をダウンロード
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm share-btn" data-id="${article.id}">
-                                <i class="fas fa-share-alt"></i> 共有
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm copy-btn" data-id="${article.id}">
-                                <i class="fas fa-copy"></i> テキストをコピー
-                            </button>
-                        </div>
+                    <h3 class="card-title">${article.title}</h3>
+                    <div class="markdown-content">${marked.parse(article.summary)}</div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-download" onclick="downloadSummary('${article.title}', '${encodeURIComponent(article.summary)}')">
+                            <i class="fas fa-download"></i> 要約をダウンロード
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm share-btn" data-id="${article.id}">
+                            <i class="fas fa-share-alt"></i> 共有
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm copy-btn" data-id="${article.id}">
+                            <i class="fas fa-copy"></i> テキストをコピー
+                        </button>
                     </div>
                 </div>
             </div>
@@ -141,36 +143,50 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'quality-needs-improvement';
     }
 
-    function displayCombinedSummary(summaries) {
-        const combinedContent = summaries.map(s => 
-            `# ${s.title}\n\n${s.summary}\n\n---\n`
-        ).join('\n');
-
-        document.getElementById('combinedContent').innerHTML = marked.parse(combinedContent);
+    async function generateCombinedSummary(summaries) {
         combinedSummary.classList.remove('d-none');
+        combiningSpinner.classList.remove('d-none');
+        
+        try {
+            const response = await fetch('/api/combine-summaries', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ summaries })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            document.getElementById('combinedContent').innerHTML = marked.parse(data.summary);
+        } catch (error) {
+            showToast('統合要約の生成に失敗しました', 'error');
+        } finally {
+            combiningSpinner.classList.add('d-none');
+        }
     }
 });
 
 function downloadSummary(title, summary) {
     const content = `# ${title}\n\n${decodeURIComponent(summary)}`;
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_summary.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadMarkdown(content, `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_summary.md`);
 }
 
 function downloadCombinedSummary() {
-    const content = document.getElementById('combinedContent').innerText;
+    const content = document.getElementById('combinedContent').getAttribute('data-markdown') ||
+                   marked.parse(document.getElementById('combinedContent').innerHTML);
+    downloadMarkdown(content, 'combined_summary.md');
+}
+
+function downloadMarkdown(content, filename) {
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'combined_summary.md';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

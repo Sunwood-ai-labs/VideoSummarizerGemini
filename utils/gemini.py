@@ -51,3 +51,34 @@ def evaluate_article_quality(summary):
     except Exception as e:
         print(f"Error evaluating article quality: {str(e)}")
         return 70  # Default score if evaluation fails
+
+def generate_combined_summary(summaries):
+    genai.configure(api_key=app.config['GEMINI_API_KEY'])
+    model = genai.GenerativeModel('gemini-pro')
+    
+    # Prepare the input for Gemini
+    combined_input = "\n\n".join([
+        f"## {summary['title']}\n{summary['summary']}"
+        for summary in summaries
+    ])
+    
+    prompt = f"""
+    以下の複数の要約を分析し、より包括的で統合された新しい記事を作成してください。
+
+    要件:
+    1. 日本語で出力してください
+    2. 各動画の重要なポイントを保持しながら、共通のテーマや関連性を見出してください
+    3. 論理的な構造で情報を整理し、見出しを使って構造化してください
+    4. 結論部分では、全体的な洞察や発見を簡潔にまとめてください
+    5. Markdown形式で出力してください
+
+    元の要約:
+    {combined_input}
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Error generating combined summary: {str(e)}")
+        return "統合要約の生成に失敗しました"

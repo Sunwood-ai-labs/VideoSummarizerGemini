@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
         <div class="card">
             <div class="card-body">
                 <h2 class="card-title mb-4"><i class="fas fa-magic"></i> YouTube 動画要約ツール</h2>
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div id="results" class="mt-4"></div>
+        <div id="results" class="mt-4 row g-4"></div>
         
         <div id="loadingSpinner" class="text-center d-none">
             <div class="spinner-border text-primary" role="status">
@@ -40,7 +40,12 @@
         <div id="combinedSummary" class="mt-4 d-none">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title"><i class="fas fa-layer-group"></i> 統合要約</h3>
+                    <h3 class="card-title mb-4">
+                        <i class="fas fa-layer-group"></i> 統合要約
+                        <div class="spinner-border spinner-border-sm text-primary d-none" id="combiningSpinner">
+                            <span class="visually-hidden">統合中...</span>
+                        </div>
+                    </h3>
                     <div class="markdown-content" id="combinedContent"></div>
                     <button class="btn btn-download mt-3" onclick="downloadCombinedSummary()">
                         <i class="fas fa-download"></i> 統合要約をダウンロード

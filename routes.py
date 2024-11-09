@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from app import app, db
 from models import Article
 from utils.youtube import get_video_info
-from utils.gemini import generate_summary, evaluate_article_quality
+from utils.gemini import generate_summary, evaluate_article_quality, generate_combined_summary
 from utils.cache import cache_get, cache_set
 import re
 
@@ -59,6 +59,18 @@ def summarize():
             results.append({'error': str(e)})
     
     return jsonify(results)
+
+@app.route('/api/combine-summaries', methods=['POST'])
+def combine_summaries():
+    summaries = request.json.get('summaries', [])
+    if not summaries:
+        return jsonify({'error': '要約が提供されていません'}), 400
+        
+    try:
+        combined_summary = generate_combined_summary(summaries)
+        return jsonify({'summary': combined_summary})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def extract_video_id(url):
     patterns = [

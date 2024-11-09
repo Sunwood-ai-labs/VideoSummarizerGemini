@@ -29,6 +29,8 @@ main {
     background: linear-gradient(145deg, #2d1f1a 0%, #231815 100%);
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     transition: transform 0.2s, box-shadow 0.2s;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .card:hover {
@@ -39,6 +41,7 @@ main {
 
 .article-card {
     margin-bottom: 1.5rem;
+    height: 100%;
 }
 
 .article-card img {
@@ -136,6 +139,8 @@ main {
 .markdown-content {
     font-family: var(--font-jp);
     line-height: 1.8;
+    max-width: 100%;
+    overflow-wrap: break-word;
 }
 
 .markdown-content h1,
@@ -161,4 +166,23 @@ main {
 .btn-download:hover {
     background: linear-gradient(45deg, #ff5722 0%, #ff7043 100%);
     color: white;
+}
+
+/* Grid layout improvements */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-md-10 {
+        padding: 0 1rem;
+    }
+    
+    .card {
+        margin: 0;
+    }
 }
