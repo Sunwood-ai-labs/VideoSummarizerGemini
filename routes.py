@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from app import app, db
 from models import Article
 from utils.youtube import get_video_info
-from utils.gemini import generate_summary
+from utils.gemini import generate_summary, evaluate_article_quality
 from utils.cache import cache_get, cache_set
 import re
 
@@ -37,12 +37,16 @@ def summarize():
             # Generate summary
             summary = generate_summary(video_info['transcript'])
             
+            # Evaluate article quality
+            quality_score = evaluate_article_quality(summary)
+            
             # Create article
             article = Article(
                 video_id=video_id,
                 title=video_info['title'],
                 summary=summary,
-                thumbnail_url=video_info['thumbnail_url']
+                thumbnail_url=video_info['thumbnail_url'],
+                quality_score=quality_score
             )
             db.session.add(article)
             db.session.commit()

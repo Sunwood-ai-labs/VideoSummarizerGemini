@@ -55,6 +55,34 @@ main {
     margin-bottom: 1rem;
 }
 
+/* Quality Score Badge */
+.quality-score-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.quality-excellent {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.quality-good {
+    background: linear-gradient(45deg, #17a2b8, #0dcaf0);
+}
+
+.quality-fair {
+    background: linear-gradient(45deg, #ffc107, #ffcd39);
+}
+
+.quality-needs-improvement {
+    background: linear-gradient(45deg, #dc3545, #ff4d5e);
+}
+
 /* Animation for loading state */
 .fade-enter {
     opacity: 0;

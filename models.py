@@ -8,6 +8,7 @@ class Article(db.Model):
     summary = db.Column(db.Text, nullable=False)
     thumbnail_url = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    quality_score = db.Column(db.Float)
     
     def to_dict(self):
         return {
@@ -16,5 +17,6 @@ class Article(db.Model):
             'title': self.title,
             'summary': self.summary,
             'thumbnail_url': self.thumbnail_url,
-            'created_at': self.created_at.isoformat()
+            'created_at': self.created_at.isoformat(),
+            'quality_score': round(self.quality_score, 2) if self.quality_score else None
         }

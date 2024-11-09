@@ -77,11 +77,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayArticle(article) {
         const articleDiv = document.createElement('div');
         articleDiv.className = 'card article-card';
+        
+        // Generate quality score badge HTML
+        const qualityScoreBadge = article.quality_score ? `
+            <div class="quality-score-badge ${getQualityScoreClass(article.quality_score)}">
+                品質スコア: ${article.quality_score}
+            </div>
+        ` : '';
+        
         articleDiv.innerHTML = `
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
                         <img src="${article.thumbnail_url}" alt="${article.title}" class="img-fluid">
+                        ${qualityScoreBadge}
                     </div>
                     <div class="col-md-8">
                         <h3 class="card-title">${article.title}</h3>
@@ -118,6 +127,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         results.appendChild(articleDiv);
+    }
+
+    function getQualityScoreClass(score) {
+        if (score >= 90) return 'quality-excellent';
+        if (score >= 80) return 'quality-good';
+        if (score >= 70) return 'quality-fair';
+        return 'quality-needs-improvement';
     }
 
     function displayCombinedSummary(summaries) {
